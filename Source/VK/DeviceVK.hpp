@@ -412,6 +412,11 @@ Result DeviceVK::Create(const DeviceCreationDesc& deviceCreationDesc, const Devi
             m_VK.EnumeratePhysicalDeviceGroups(m_Instance, &deviceGroupNum, nullptr);
 
             Scratch<VkPhysicalDeviceGroupProperties> deviceGroups = AllocateScratch(*this, VkPhysicalDeviceGroupProperties, deviceGroupNum);
+            uint32_t i = 0;
+            for (; i < deviceGroupNum; i++) {
+                deviceGroups[i].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES;
+                deviceGroups[i].pNext = NULL;
+            }
             VkResult result = m_VK.EnumeratePhysicalDeviceGroups(m_Instance, &deviceGroupNum, deviceGroups);
             RETURN_ON_FAILURE(this, result == VK_SUCCESS, GetReturnCode(result), "vkEnumeratePhysicalDevices returned %d", (int32_t)result);
 
@@ -420,7 +425,7 @@ Result DeviceVK::Create(const DeviceCreationDesc& deviceCreationDesc, const Devi
             VkPhysicalDeviceIDProperties idProps = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};
             props.pNext = &idProps;
 
-            uint32_t i = 0;
+            i = 0;
             for (; i < deviceGroupNum; i++) {
                 const VkPhysicalDeviceGroupProperties& group = deviceGroups[i];
                 m_VK.GetPhysicalDeviceProperties2(group.physicalDevices[0], &props);
